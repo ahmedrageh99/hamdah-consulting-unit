@@ -1,51 +1,28 @@
-// js/blog.js
 (function () {
-  const posts = Array.isArray(window.BLOG_POSTS) ? window.BLOG_POSTS : [];
-
+  const grid = document.getElementById("blogGrid");
   const topicFilter = document.getElementById("topicFilter");
   const sortFilter = document.getElementById("sortFilter");
   const searchInput = document.getElementById("searchInput");
   const clearBtn = document.getElementById("clearBtn");
-  const blogGrid = document.getElementById("blogGrid");
   const resultsMeta = document.getElementById("resultsMeta");
 
-  const STORAGE_KEY = "hamdah_blog_filters_v1";
+  if (!grid) return;
 
-  function parseDate(d) {
-    const t = Date.parse(d);
-    return Number.isNaN(t) ? 0 : t;
+  const posts = Array.isArray(window.BLOG_POSTS) ? window.BLOG_POSTS : (typeof BLOG_POSTS !== "undefined" ? BLOG_POSTS : []);
+
+  function formatDate(iso) {
+    const d = new Date(iso + "T00:00:00");
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
   }
 
-  function saveState() {
-    const state = {
-      topic: topicFilter.value,
-      sort: sortFilter.value,
-      search: searchInput.value.trim()
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  function uniqueTopics(items) {
+    return [...new Set(items.map(p => (p.topic || "").trim()).filter(Boolean))].sort();
   }
 
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const state = JSON.parse(raw);
-      if (state?.topic) topicFilter.value = state.topic;
-      if (state?.sort) sortFilter.value = state.sort;
-      if (typeof state?.search === "string") searchInput.value = state.search;
-    } catch {
-      // ignore
-    }
-  }
-
-  function uniqueTopics(list) {
-    return Array.from(new Set(list.map(p => p.topic).filter(Boolean))).sort();
-  }
-
-  function buildTopicOptions() {
+  function populateTopics() {
     const topics = uniqueTopics(posts);
-    // keep "all" first
-    topics.forEach((t) => {
+    topics.forEach(t => {
       const opt = document.createElement("option");
       opt.value = t;
       opt.textContent = t;
@@ -53,92 +30,81 @@
     });
   }
 
+  function normalize(s) {
+    return String(s || "").toLowerCase().trim();
+  }
+
   function applyFilters() {
     const topic = topicFilter.value;
     const sort = sortFilter.value;
-    const q = searchInput.value.trim().toLowerCase();
+    const q = normalize(searchInput.value);
 
     let filtered = [...posts];
 
     if (topic !== "all") {
-      filtered = filtered.filter(p => p.topic === topic);
+      filtered = filtered.filter(p => (p.topic || "") === topic);
     }
 
     if (q) {
       filtered = filtered.filter(p => {
-        const hay = `${p.title} ${p.excerpt} ${p.content}`.toLowerCase();
+        const hay = normalize(`${p.title} ${p.topic} ${p.content}`);
         return hay.includes(q);
       });
     }
 
     filtered.sort((a, b) => {
-      const da = parseDate(a.date);
-      const db = parseDate(b.date);
+      const da = new Date(a.date);
+      const db = new Date(b.date);
       return sort === "oldest" ? da - db : db - da;
     });
 
-    return filtered;
+    render(filtered);
   }
 
-  function render(list) {
-    blogGrid.innerHTML = "";
+  function render(items) {
+    grid.innerHTML = "";
 
-    if (!list.length) {
-      blogGrid.innerHTML = `
-        <div style="background:#fff;padding:18px;border-radius:14px;box-shadow:0 8px 22px rgba(15,23,42,.06);">
-          <strong>No posts found.</strong>
-          <p style="margin:8px 0 0;color:#4b5563;">Try changing the topic or search keyword.</p>
-        </div>
+    resultsMeta.textContent = `${items.length} result${items.length === 1 ? "" : "s"}`;
+
+    if (items.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "service-card";
+      empty.innerHTML = `
+        <h3>No posts found</h3>
+        <p style="color:#4b5563;">Try changing your topic filter or search keyword.</p>
       `;
-      resultsMeta.textContent = "0 results";
+      grid.appendChild(empty);
       return;
     }
 
-    resultsMeta.textContent = `${list.length} result${list.length > 1 ? "s" : ""}`;
-
-    const cards = list.map((p) => {
-      const d = new Date(p.date);
-      const pretty = Number.isNaN(d.getTime()) ? p.date : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-
-      return `
-        <article class="blog-card">
-          <div class="blog-card-top">
-            <span class="blog-topic">${p.topic || "General"}</span>
-            <span class="blog-date">${pretty}</span>
-          </div>
-          <h3 class="blog-title">${p.title}</h3>
-          <p class="blog-excerpt">${p.excerpt || ""}</p>
-          <details class="blog-details">
-            <summary class="blog-readmore">Read more</summary>
-            <p class="blog-content">${p.content || ""}</p>
-          </details>
-        </article>
+    items.forEach(p => {
+      const card = document.createElement("article");
+      card.className = "blog-card";
+      card.innerHTML = `
+        <div class="blog-meta">
+          <span class="blog-topic">${p.topic || "General"}</span>
+          <span class="blog-date">${formatDate(p.date)}</span>
+        </div>
+        <h3 class="blog-title">${p.title}</h3>
+        <p class="blog-excerpt">${p.content}</p>
+        <a class="blog-link" href="#" onclick="return false;">► Read more</a>
       `;
+      grid.appendChild(card);
     });
-
-    blogGrid.innerHTML = cards.join("");
-  }
-
-  function onChange() {
-    saveState();
-    render(applyFilters());
   }
 
   function clearAll() {
     topicFilter.value = "all";
     sortFilter.value = "newest";
     searchInput.value = "";
-    saveState();
-    render(applyFilters());
+    applyFilters();
   }
 
-  // Init
-  buildTopicOptions();
-  loadState();
-  render(applyFilters());
+  populateTopics();
+  applyFilters();
 
-  topicFilter.addEventListener("change", onChange);
-  sortFilter.addEventListener("change", onChange);
-  searchInput.addEventListener("input", onChange);
+  topicFilter.addEventListener("change", applyFilters);
+  sortFilter.addEventListener("change", applyFilters);
+  searchInput.addEventListener("input", applyFilters);
   clearBtn.addEventListener("click", clearAll);
 })();
