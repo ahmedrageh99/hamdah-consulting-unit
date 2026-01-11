@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hamdah Consulting Unit — Blog</title>
+  <meta name="description" content="Insights and updates on EU/UK cosmetics compliance, RP services, PIF/CPSR, and labelling." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">Hamdah<span>Consulting</span></div>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#services">Services</a>
+        <a href="blog.html" class="active">Blog</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+      <a href="index.html#contact" class="btn btn-primary">Book a Call</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" style="padding-top:50px;">
+      <div class="container">
+        <div class="section-heading center">
+          <p class="badge">Insights</p>
+          <h2>Compliance articles and practical guidance</h2>
+          <p class="section-subtitle">
+            Short, actionable posts to help founders understand EU/UK cosmetics requirements.
+          </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="blog-controls" style="margin-top:24px;">
+          <div class="blog-controls-row">
+            <label>
+              Topic
+              <select id="topicFilter">
+                <option value="all">All topics</option>
+              </select>
+            </label>
+
+            <label>
+              Sort by
+              <select id="sortFilter">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </label>
+
+            <label class="blog-search">
+              Search
+              <input id="searchInput" type="search" placeholder="Search by keyword…" />
+            </label>
+
+            <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+          </div>
+
+          <p id="resultsMeta" style="margin:10px 0 0;color:#4b5563;"></p>
+        </div>
+
+        <!-- Blog list -->
+        <div id="blogGrid" class="blog-grid" style="margin-top:22px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> Hamdah Consulting Unit. All rights reserved.</p>
+      <p class="footer-meta">EU/UK Cosmetics Compliance • Regulatory Strategy • Documentation &amp; Claims Review</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- Option A: load posts from JS file -->
+  <script src="js/posts.js"></script>
+  <script src="js/blog.js"></script>
+</body>
+</html>
