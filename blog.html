@@ -5,10 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hamdah Consulting Unit — Blog</title>
   <meta name="description" content="Insights and updates on EU/UK cosmetics compliance, RP services, PIF/CPSR, and labelling." />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
 
+  <!-- Primary (most common) -->
+  <link id="main-css" rel="stylesheet" href="styles.css" />
+
+  <!-- Fallback: if your file is named style.css instead -->
+  <script>
+    (function () {
+      const link = document.getElementById("main-css");
+      // If styles.css fails, swap to style.css
+      link.addEventListener("error", function () {
+        link.href = "style.css";
+      });
+    })();
+  </script>
+</head>
+
+<body>
   <header class="site-header">
     <div class="container header-inner">
       <div class="logo">Hamdah<span>Consulting</span></div>
@@ -75,7 +88,7 @@
   </footer>
 
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 
   <script src="js/posts.js"></script>
